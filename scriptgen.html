@@ -258,10 +258,53 @@
       font-size: 15px;
       line-height: 1.75;
       color: #d4d4d8;
-      white-space: pre-wrap;
-      word-wrap: break-word;
       max-height: 600px;
       overflow-y: auto;
+    }
+
+    .result-card__content h1,
+    .result-card__content h2,
+    .result-card__content h3 {
+      color: #fafafa;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+
+    .result-card__content h1 { font-size: 22px; }
+    .result-card__content h2 { font-size: 18px; }
+    .result-card__content h3 { font-size: 16px; }
+
+    .result-card__content p {
+      margin-bottom: 12px;
+    }
+
+    .result-card__content ul,
+    .result-card__content ol {
+      margin-bottom: 12px;
+      padding-left: 24px;
+    }
+
+    .result-card__content li {
+      margin-bottom: 4px;
+    }
+
+    .result-card__content strong {
+      color: #fafafa;
+    }
+
+    .result-card__content em {
+      color: #a1a1aa;
+      font-style: italic;
+    }
+
+    .result-card__content hr {
+      border: none;
+      border-top: 1px solid #27272a;
+      margin: 20px 0;
+    }
+
+    .result-card__content *:first-child {
+      margin-top: 0;
     }
 
     .result-card__content::-webkit-scrollbar {
@@ -441,6 +484,7 @@
 
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     // DOM elements
     const form = document.getElementById('scriptForm');
@@ -538,7 +582,8 @@
         const data = await response.json();
         stopProgress();
 
-        resultContent.textContent = data.roteiro || 'Nenhum roteiro retornado.';
+        const raw = data.roteiro || 'Nenhum roteiro retornado.';
+        resultContent.innerHTML = marked.parse(raw);
         showSection('result');
 
       } catch (err) {
@@ -549,7 +594,7 @@
 
     // Copy button
     btnCopy.addEventListener('click', () => {
-      const text = resultContent.textContent;
+      const text = resultContent.innerText;
       navigator.clipboard.writeText(text).then(() => {
         btnCopy.textContent = 'Copiado!';
         setTimeout(() => { btnCopy.textContent = 'Copiar'; }, 2000);
