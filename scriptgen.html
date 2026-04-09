@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScriptGen — Gerador de Roteiros de YouTube</title>
+  <meta name="description" content="Gere roteiros virais para YouTube em minutos com ScriptGen. Ferramenta inteligente para criadores de conteúdo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0a0a0a;
+      color: #e4e4e7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 40px 16px 60px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .header__logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .header__icon {
+      width: 36px;
+      height: 36px;
+      background: #FF0000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header__icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+
+    .header__title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .header__subtitle {
+      font-size: 15px;
+      color: #71717a;
+      font-weight: 400;
+    }
+
+    /* ── Form ── */
+    .form-section {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field__label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #d4d4d8;
+    }
+
+    .field__input,
+    .field__textarea {
+      width: 100%;
+      padding: 14px 16px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      color: #fafafa;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+
+    .field__input::placeholder,
+    .field__textarea::placeholder {
+      color: #52525b;
+    }
+
+    .field__input:focus,
+    .field__textarea:focus {
+      border-color: #FF0000;
+      box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.12);
+    }
+
+    .field__textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .field__hint {
+      font-size: 12px;
+      color: #52525b;
+      margin-top: 2px;
+    }
+
+    /* ── Submit Button ── */
+    .btn-submit {
+      width: 100%;
+      height: 52px;
+      background: #FF0000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+      margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+      background: #e60000;
+    }
+
+    .btn-submit:active {
+      transform: scale(0.985);
+    }
+
+    /* ── Loading ── */
+    .loading-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 60px 0;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #27272a;
+      border-top-color: #FF0000;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-section__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e4e4e7;
+    }
+
+    .loading-section__hint {
+      font-size: 13px;
+      color: #52525b;
+      margin-top: -8px;
+    }
+
+    .progress-bar-wrapper {
+      width: 100%;
+      max-width: 400px;
+      height: 6px;
+      background: #27272a;
+      border-radius: 100px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #FF0000, #ff4444);
+      border-radius: 100px;
+      transition: width 0.5s ease;
+    }
+
+    /* ── Result ── */
+    .result-section {
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .result-card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .result-card__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #27272a;
+    }
+
+    .result-card__title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e4e4e7;
+    }
+
+    .btn-copy {
+      padding: 8px 16px;
+      background: #27272a;
+      color: #a1a1aa;
+      border: 1px solid #3f3f46;
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .btn-copy:hover {
+      background: #3f3f46;
+      color: #fafafa;
+    }
+
+    .result-card__content {
+      padding: 20px;
+      font-size: 15px;
+      line-height: 1.75;
+      color: #d4d4d8;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .result-card__content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .result-card__content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .result-card__content::-webkit-scrollbar-thumb {
+      background: #3f3f46;
+      border-radius: 100px;
+    }
+
+    .btn-reset {
+      width: 100%;
+      height: 48px;
+      background: transparent;
+      color: #a1a1aa;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn-reset:hover {
+      background: #18181b;
+      color: #fafafa;
+      border-color: #3f3f46;
+    }
+
+    /* ── Error ── */
+    .error-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 60px 0;
+      text-align: center;
+    }
+
+    .error-section__icon {
+      font-size: 40px;
+    }
+
+    .error-section__message {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e4e4e7;
+    }
+
+    .btn-back {
+      padding: 12px 28px;
+      background: #27272a;
+      color: #fafafa;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-top: 4px;
+    }
+
+    .btn-back:hover {
+      background: #3f3f46;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      body {
+        padding: 24px 16px 48px;
+      }
+
+      .header {
+        margin-bottom: 36px;
+      }
+
+      .header__title {
+        font-size: 24px;
+      }
+
+      .btn-submit {
+        height: 48px;
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header__logo">
+        <div class="header__icon">
+          <svg viewBox="0 0 24 24"><polygon points="9.5,7.5 16.5,12 9.5,16.5"/></svg>
+        </div>
+        <span class="header__title">ScriptGen</span>
+      </div>
+      <p class="header__subtitle">Gere roteiros virais em minutos</p>
+    </header>
+
+    <!-- Form -->
+    <form class="form-section" id="scriptForm" novalidate>
+      <div class="field">
+        <label class="field__label" for="tema">Tema do vídeo em inglês</label>
+        <input
+          type="text"
+          class="field__input"
+          id="tema"
+          placeholder="ex: personal finance for beginners"
+          required
+        >
+        <span class="field__hint">Digite em inglês para encontrar os vídeos mais virais</span>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="canal">Sobre o seu canal</label>
+        <textarea
+          class="field__textarea"
+          id="canal"
+          rows="3"
+          placeholder="ex: Canal de finanças pessoais para jovens brasileiros que querem sair das dívidas e começar a investir"
+          required
+        ></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="apresentador">Como é o apresentador?</label>
+        <textarea
+          class="field__textarea"
+          id="apresentador"
+          rows="3"
+          placeholder="ex: João, 28 anos, fala de forma direta e descontraída, usa exemplos do dia a dia, sem termos técnicos"
+          required
+        ></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btnSubmit">Gerar Roteiro →</button>
+    </form>
+
+    <!-- Loading -->
+    <div class="loading-section" id="loadingSection">
+      <div class="spinner"></div>
+      <p class="loading-section__title">Buscando os vídeos mais virais sobre o tema...</p>
+      <p class="loading-section__hint">Isso pode levar até 2 minutos</p>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section" id="resultSection">
+      <div class="result-card">
+        <div class="result-card__header">
+          <span class="result-card__title">✅ Roteiro gerado</span>
+          <button class="btn-copy" id="btnCopy">Copiar</button>
+        </div>
+        <div class="result-card__content" id="resultContent"></div>
+      </div>
+      <button class="btn-reset" id="btnReset">Gerar outro roteiro</button>
+    </div>
+
+    <!-- Error -->
+    <div class="error-section" id="errorSection">
+      <div class="error-section__icon">⚠️</div>
+      <p class="error-section__message">Algo deu errado. Tente novamente.</p>
+      <button class="btn-back" id="btnBack">Voltar ao formulário</button>
+    </div>
+
+  </div>
+
+  <script>
+    // DOM elements
+    const form = document.getElementById('scriptForm');
+    const loadingSection = document.getElementById('loadingSection');
+    const resultSection = document.getElementById('resultSection');
+    const errorSection = document.getElementById('errorSection');
+    const progressBar = document.getElementById('progressBar');
+    const resultContent = document.getElementById('resultContent');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnReset = document.getElementById('btnReset');
+    const btnBack = document.getElementById('btnBack');
+
+    let progressInterval = null;
+
+    // Show/hide sections
+    function showSection(section) {
+      form.style.display = 'none';
+      loadingSection.style.display = 'none';
+      resultSection.style.display = 'none';
+      errorSection.style.display = 'none';
+
+      if (section === 'form') {
+        form.style.display = 'flex';
+      } else if (section === 'loading') {
+        loadingSection.style.display = 'flex';
+      } else if (section === 'result') {
+        resultSection.style.display = 'flex';
+      } else if (section === 'error') {
+        errorSection.style.display = 'flex';
+      }
+    }
+
+    // Progress bar animation: 0% → 90% in 90 seconds
+    function startProgress() {
+      let progress = 0;
+      const duration = 90000; // 90s
+      const target = 90;
+      const stepMs = 500;
+      const increment = (target / (duration / stepMs));
+
+      progressBar.style.width = '0%';
+
+      progressInterval = setInterval(() => {
+        progress += increment;
+        if (progress >= target) {
+          progress = target;
+          clearInterval(progressInterval);
+        }
+        progressBar.style.width = progress + '%';
+      }, stepMs);
+    }
+
+    function stopProgress() {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      progressBar.style.width = '100%';
+    }
+
+    // Form submit
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const tema = document.getElementById('tema').value.trim();
+      const canal = document.getElementById('canal').value.trim();
+      const apresentador = document.getElementById('apresentador').value.trim();
+
+      if (!tema || !canal || !apresentador) {
+        // Highlight empty fields
+        if (!tema) document.getElementById('tema').focus();
+        else if (!canal) document.getElementById('canal').focus();
+        else document.getElementById('apresentador').focus();
+        return;
+      }
+
+      showSection('loading');
+      startProgress();
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 300s timeout
+
+        const response = await fetch('https://linktech.app.n8n.cloud/webhook/gerar-roteiro', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tema, canal, apresentador }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error('Erro na resposta');
+
+        const data = await response.json();
+        stopProgress();
+
+        resultContent.textContent = data.roteiro || 'Nenhum roteiro retornado.';
+        showSection('result');
+
+      } catch (err) {
+        stopProgress();
+        showSection('error');
+      }
+    });
+
+    // Copy button
+    btnCopy.addEventListener('click', () => {
+      const text = resultContent.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btnCopy.textContent = 'Copiado!';
+        setTimeout(() => { btnCopy.textContent = 'Copiar'; }, 2000);
+      }).catch(() => {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        btnCopy.textContent = 'Copiado!';
+        setTimeout(() => { btnCopy.textContent = 'Copiar'; }, 2000);
+      });
+    });
+
+    // Reset button
+    btnReset.addEventListener('click', () => {
+      form.reset();
+      progressBar.style.width = '0%';
+      showSection('form');
+    });
+
+    // Error back button
+    btnBack.addEventListener('click', () => {
+      progressBar.style.width = '0%';
+      showSection('form');
+    });
+  </script>
+</body>
+</html>
